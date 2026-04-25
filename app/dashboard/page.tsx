@@ -33,7 +33,7 @@ export default function Dashboard() {
               <Icon className="w-4 h-4" style={{ color }} />
             </div>
             <div className="text-2xl font-bold text-white mb-1">{value}</div>
-            <div className="text-xs text-[#646878]">{sub</div>
+            <div className="text-xs text-[#646878]">{sub}</div>
           </div>
         ))}
       </div>
@@ -41,7 +41,7 @@ export default function Dashboard() {
         {MODULES.map(({ href, icon: Icon, title, desc, color }) => (
           <Link key={href} href={href} className="tryvor-card hover:border-[#00C8A0]/30 transition-all group block">
             <div className="flex items-start gap-4">
-              <div style={{ background: color+'20' }} className="w4 h-4 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div style={{ background: color+'20' }} className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Icon className="w-5 h-5" style={{ color }} />
               </div>
               <div>

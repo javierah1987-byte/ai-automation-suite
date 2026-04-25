@@ -41,7 +41,7 @@ export default function SettingsPage() {
           ))}
         </div>
         <button onClick={save} className="tryvor-btn mt-4 flex items-center gap-2">
-          {saved ? <CheckCircle className="w4 h-4" /> : <Settings className="w-4 h-4" />}
+          {saved ? <CheckCircle className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
           {saved ? "Guardado ✓" : "Guardar cambios"}
         </button>
       </div>
