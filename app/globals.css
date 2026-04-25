@@ -18,9 +18,9 @@
 }
 @layer base {
   * { @apply border-border; }
-  body { @apply bg-[#0A0C16] text-foreground; font-family: -apple-system, sans-serif; }
+  body { @apply bg-[#0A0C16] text-foreground; font-family: -apple-system,sans-serif; }
 }
-.tryvor-card { @apply bg-[#0F1120] border border-[#1E2035] rounded-xl p6; }
-.tryvor-btn { @apply bg-[#00C8A0] text-[#0A0C16] font-semibold px-4 py-2 rounded-lg hover:bg-[#009E78] transition-colors; }
-.tryvor-btn-outline { @apply border border-[#00C8A0] text-[#00C8A0] font-semibold px-4 py-2 rounded-lg hover:bg-[#003D30] transition-colors; }
-.dot-grid { background-image: radial-gradient(circle, #1E2035 1px, transparent 1px); background-size: 24px 24px; }
+.tryvor-card{@apply bg-[#0F1120] border border-[#1E2035] rounded-xl p-6;}
+.tryvor-btn{@apply bg-[#00C8A0] text-[#0A0C16] font-semibold px-4 py-2 rounded-lg hover:bg-[#009E78] transition-colors;}
+.tryvor-btn-outline{@apply border border-[#00C8A0] text-[#00C8A0] font-semibold px-4 py-2 rounded-lg hover:bg-[#003D30] transition-colors;}
+.dot-grid{background-image:radial-gradient(circle,#1E2035 1px,transparent 1px);background-size:24px 24px;}
