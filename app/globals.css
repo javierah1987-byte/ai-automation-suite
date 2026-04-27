@@ -2,30 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 230 20% 6%;
-    --foreground: 220 15% 92%;
-    --border: 232 22% 18%;
-    --ring: 165 100% 39%;
-    --radius: 0.625rem;
-    --teal: #00C8A0;
-    --dark: #0A0C16;
-  }
+:root {
+  --teal: #00C8A0;
+  --teal-dark: #009E78;
+  --teal-muted: #003D30;
+  --panel: #12141F;
+  --dark: #0A0C16;
+  --border-color: #1E2035;
 }
 
-@layer base {
-  * { border-color: hsl(var(--border)); }
-  body {
-    @apply bg-[#0A0C16] text-foreground;
-    font-family: -apple-system, sans-serif;
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: #0A0C16;
+  color: #E8EAF0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.tryvor-card { @apply bg-[#0F1120] border border-[#1E2035] rounded-xl p-6; }
-.tryvor-btn { @apply bg-[#00C8A0] text-[#0A0C16] font-semibold px-4 py-2 rounded-lg hover:bg-[#009E78] transition-colors; }
-.tryvor-btn-outline { @apply border border-[#00C8A0] text-[#00C8A0] font-semibold px-4 py-2 rounded-lg hover:bg-[#003D30] transition-colors; }
-.dot-grid { background-image: radial-gradient(circle, #1E2035 1px, transparent 1px); background-size: 24px 24px; }
+.tryvor-card {
+  background: #0F1120;
+  border: 1px solid #1E2035;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.tryvor-btn {
+  background: #00C8A0;
+  color: #0A0C16;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+}
+.tryvor-btn:hover { background: #009E78; }
+
+.tryvor-btn-outline {
+  border: 1px solid #00C8A0;
+  color: #00C8A0;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+}
+.tryvor-btn-outline:hover { background: #003D30; }
+
+.dot-grid {
+  background-image: radial-gradient(circle, #1E2035 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #0A0C16; }
 ::-webkit-scrollbar-thumb { background: #1E2035; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #00C8A0; }
