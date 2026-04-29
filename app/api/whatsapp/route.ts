@@ -7,19 +7,17 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 export async function POST(req: NextRequest) {
   try {
     const { message, businessName, businessInfo, history = [] } = await req.json();
-    const historyText = history.slice(-6).map((m: any) => `${m.role === "user" ? "Cliente" : "Bot"}: ${m.text}`).join("\n");
+    console.log("KEY_EXISTS:", !!process.env.ANTHROPIC_API_KEY);
+    console.log("KEY_PREFIX:", process.env.ANTHROPIC_API_KEY?.slice(0, 15));
     const res = await anthropic.messages.create({
       model: "claude-sonnet-4-5-20250929",
       max_tokens: 300,
-      messages: [{ role: "user", content: `Eres el asistente virtual de WhatsApp del negocio "${businessName}".
-INFORMACIÓN DEL NEGOCIO: ${businessInfo}
-HISTORIAL: ${historyText}
-MENSAJE: ${message}
-Responde amable, breve (máx 3 frases), en español. NO inventes datos.` }]
+      messages: [{ role: "user", content: `Eres asistente de ${businessName}. ${businessInfo}. Cliente: ${message}. Responde breve en español.` }]
     });
-    const reply = res.content[0].type === "text" ? res.content[0].text : "Gracias por tu mensaje. En breve te atendemos.";
+    const reply = res.content[0].type === "text" ? res.content[0].text : "Gracias.";
     return NextResponse.json({ reply });
   } catch (e: any) {
-    return NextResponse.json({ reply: "Disculpa, error técnico. Contáctanos directamente." });
+    console.error("WA_ERROR:", JSON.stringify({msg: e.message, status: e.status, errType: e.error?.type}));
+    return NextResponse.json({ reply: "ERR:" + e.message.slice(0,100) });
   }
 }
