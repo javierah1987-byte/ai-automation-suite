@@ -7,12 +7,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 export async function POST(req: NextRequest) {
   try {
     const { email, tone, name } = await req.json();
-    const res = await anthropic.messages.create({
-      model: "claude-sonnet-4-5-20250929",
-      max_tokens: 400,
-      messages: [{ role: "user", content: `Eres asistente de email de ${name} (Tryvor).\nEmail: De ${email.from} Asunto: ${email.subject}\n${email.body}\nRedacta respuesta tono "${tone}", máx 150 palabras. Firma: ${name} · Tryvor` }]
-    });
-    const draft = res.content[0].type === "text" ? res.content[0].text : "";
-    return NextResponse.json({ draft });
+    const res = await anthropic.messages.create({ model: "claude-sonnet-4-5-20250929", max_tokens: 500, messages: [{ role: "user", content: `Eres el asistente de email de ${name||'Tryvor'}.\nEmail recibido:\nDe: ${email.from||'desconocido'}\nAsunto: ${email.subject||'Sin asunto'}\nCuerpo: ${email.body||''}\nRedacta borrador de respuesta con tono "${tone||'profesional'}" en español. Máx 150 palabras. Firma: "${name||'Javier'} �� Tryvor".` }] });
+    return NextResponse.json({ draft: res.content[0].type === "text" ? res.content[0].text : "" });
   } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
 }
