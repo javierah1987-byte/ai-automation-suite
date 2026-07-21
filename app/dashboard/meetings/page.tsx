@@ -88,7 +88,25 @@ export default function MeetingsPage() {
   }
 
   function copyTasks() {
-    navigator.clipboard.writeText(result?.tasks?.map(t => `- ${t.person}: ${t.task} (${t.deadline || "sin fecha"})`).join("\n") || "");
+    // Copia el BRIEF COMPLETO en markdown (para pegárselo al equipo de desarrollo / a Nexa).
+    const r = result || {};
+    const L = [];
+    L.push(`# Brief de reunión${r.cliente_proyecto ? " — " + r.cliente_proyecto : ""}`);
+    if (r.title) L.push(`**Reunión:** ${r.title}`);
+    if (r.summary) L.push(`\n## Resumen\n${r.summary}`);
+    if (r.objetivo) L.push(`\n## Objetivo\n${r.objetivo}`);
+    if (r.tipo_producto) L.push(`\n**Tipo de producto:** ${r.tipo_producto}`);
+    if (r.funcionalidades?.length) L.push(`\n## Funcionalidades\n${r.funcionalidades.map(f => `- [${f.prioridad || "?"}] ${f.nombre}${f.nota ? " — " + f.nota : ""}`).join("\n")}`);
+    if (r.usuarios_roles?.length) L.push(`\n**Usuarios/roles:** ${r.usuarios_roles.join(", ")}`);
+    if (r.integraciones?.length) L.push(`\n**Integraciones:** ${r.integraciones.join(", ")}`);
+    if (r.datos_entidades?.length) L.push(`\n**Datos/entidades:** ${r.datos_entidades.join(", ")}`);
+    const rc = r.restricciones || {};
+    const rcL = Object.entries(rc).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`);
+    if (rcL.length) L.push(`\n**Restricciones:** ${rcL.join(" · ")}`);
+    if (r.dudas_pendientes?.length) L.push(`\n## Dudas por aclarar\n${r.dudas_pendientes.map(d => `- ${d}`).join("\n")}`);
+    if (r.decisiones?.length) L.push(`\n## Decisiones\n${r.decisiones.map(d => `- ${d}`).join("\n")}`);
+    if (r.tasks?.length) L.push(`\n## Tareas\n${r.tasks.map(t => `- ${t.person}: ${t.task} (${t.deadline || "sin fecha"})`).join("\n")}`);
+    navigator.clipboard.writeText(L.join("\n"));
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   }
 
