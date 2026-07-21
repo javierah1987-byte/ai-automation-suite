@@ -11,6 +11,8 @@ export default function RecordPage() {
   const [uploading, setUploading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [result, setResult] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -57,12 +59,36 @@ export default function RecordPage() {
       const res = await fetch("/api/meetings/transcribe", { method: "POST", body: formData });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
+      setResult(data);
       setDone(true);
     } catch (e: any) {
       setError(e.message || "Error al procesar el audio");
     } finally {
       setUploading(false);
     }
+  }
+
+  function copyBrief() {
+    const r = result || {};
+    const L = [];
+    L.push(`# Brief de reunión${r.cliente_proyecto ? " — " + r.cliente_proyecto : ""}`);
+    if (r.title) L.push(`**Reunión:** ${r.title}`);
+    if (r.summary) L.push(`\n## Resumen\n${r.summary}`);
+    if (r.objetivo) L.push(`\n## Objetivo\n${r.objetivo}`);
+    if (r.tipo_producto) L.push(`\n**Tipo de producto:** ${r.tipo_producto}`);
+    if (r.funcionalidades?.length) L.push(`\n## Funcionalidades\n${r.funcionalidades.map(f => `- [${f.prioridad || "?"}] ${f.nombre}${f.nota ? " — " + f.nota : ""}`).join("\n")}`);
+    if (r.usuarios_roles?.length) L.push(`\n**Usuarios/roles:** ${r.usuarios_roles.join(", ")}`);
+    if (r.integraciones?.length) L.push(`\n**Integraciones:** ${r.integraciones.join(", ")}`);
+    if (r.datos_entidades?.length) L.push(`\n**Datos/entidades:** ${r.datos_entidades.join(", ")}`);
+    const rc = r.restricciones || {};
+    const rcL = Object.entries(rc).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`);
+    if (rcL.length) L.push(`\n**Restricciones:** ${rcL.join(" · ")}`);
+    if (r.dudas_pendientes?.length) L.push(`\n## Dudas por aclarar\n${r.dudas_pendientes.map(d => `- ${d}`).join("\n")}`);
+    if (r.decisiones?.length) L.push(`\n## Decisiones\n${r.decisiones.map(d => `- ${d}`).join("\n")}`);
+    if (r.tasks?.length) L.push(`\n## Tareas\n${r.tasks.map(t => `- ${t.person}: ${t.task} (${t.deadline || "sin fecha"})`).join("\n")}`);
+    if (r.transcript) L.push(`\n---\n## Transcripción completa\n${r.transcript}`);
+    navigator.clipboard.writeText(L.join("\n"));
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
   }
 
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
@@ -110,10 +136,49 @@ export default function RecordPage() {
               </div>
             </>
           ) : (
-            <div className="text-center">
-              <div className="text-5xl mb-4">✅</div>
-              <div className="text-lg font-semibold text-[#00C8A0]">Reunión procesada</div>
-              <div className="text-sm text-[#646878] mt-1">Resumen y tareas enviados por email</div>
+            <div className="w-full text-left">
+              <div className="text-center mb-4">
+                <div className="text-5xl mb-2">✅</div>
+                <div className="text-lg font-semibold text-[#00C8A0]">Reunión procesada</div>
+              </div>
+              {result?.summary && (
+                <div className="bg-[#12141F] rounded-xl p-4 mb-3">
+                  <div className="text-xs text-[#646878] font-semibold uppercase tracking-wide mb-2">Resumen</div>
+                  <p className="text-sm text-[#B4B8C6] leading-relaxed">{result.summary}</p>
+                </div>
+              )}
+              {result?.objetivo && (
+                <div className="bg-[#12141F] rounded-xl p-4 mb-3">
+                  <div className="text-xs text-[#646878] font-semibold uppercase tracking-wide mb-2">Objetivo</div>
+                  <p className="text-sm text-[#B4B8C6] leading-relaxed">{result.objetivo}</p>
+                </div>
+              )}
+              {result?.funcionalidades?.length > 0 && (
+                <div className="bg-[#12141F] rounded-xl p-4 mb-3">
+                  <div className="text-xs text-[#646878] font-semibold uppercase tracking-wide mb-2">Funcionalidades ({result.funcionalidades.length})</div>
+                  <ul className="text-sm text-[#B4B8C6] space-y-1">
+                    {result.funcionalidades.map((f, i) => (
+                      <li key={i}>• <span className="text-[#00C8A0]">[{f.prioridad || "?"}]</span> {f.nombre}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {result?.tasks?.length > 0 && (
+                <div className="bg-[#12141F] rounded-xl p-4 mb-3">
+                  <div className="text-xs text-[#646878] font-semibold uppercase tracking-wide mb-2">Tareas ({result.tasks.length})</div>
+                  <ul className="text-sm text-[#B4B8C6] space-y-1">
+                    {result.tasks.map((t, i) => (
+                      <li key={i}>• {t.person}: {t.task}{t.deadline ? ` (${t.deadline})` : ""}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <button onClick={copyBrief} className="w-full tryvor-btn flex items-center justify-center gap-2 py-3 text-sm mb-2">
+                {copied ? "✓ Brief copiado" : "📋 Copiar brief completo"}
+              </button>
+              <button onClick={() => { setDone(false); setResult(null); setAudioBlob(null); setSeconds(0); }} className="w-full text-[#646878] text-sm py-2">
+                Grabar otra reunión
+              </button>
             </div>
           )}
         </div>
