@@ -1,11 +1,10 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 export const maxDuration = 60; // reuniones más largas
 
-// Transcripción REAL (Groq · Whisper large v3) + análisis a brief de requisitos (Claude).
+// Transcripción REAL (Groq · Whisper large v3) + análisis a brief de requisitos (Groq · Llama 3.3 70B).
+// Todo con UNA sola clave de Groq (gratis). Antes el resumen era SIMULADO y la analítica dependía de una clave Anthropic inválida.
 // Antes: el resumen era SIMULADO (Claude se lo inventaba del título). Ahora escucha el audio de verdad.
 export async function POST(req: NextRequest) {
   try {
@@ -67,12 +66,19 @@ TRANSCRIPCIÓN:
 ${transcript}
 """`;
 
-    const res = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2500,
-      messages: [{ role: "user", content: prompt }],
+    const aRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 2500,
+        response_format: { type: "json_object" },
+        messages: [{ role: "user", content: prompt }],
+      }),
     });
-    const text = res.content[0].type === "text" ? res.content[0].text : "{}";
+    const aJson = await aRes.json();
+    if (!aRes.ok) return NextResponse.json({ error: "Error al analizar: " + JSON.stringify(aJson).slice(0, 300) }, { status: 502 });
+    const text = aJson?.choices?.[0]?.message?.content || "{}";
     let data;
     try { data = JSON.parse(text.replace(/```json|```/g, "").trim()); }
     catch { data = { summary: transcript.slice(0, 600), tasks: [], attendees: [] }; }
