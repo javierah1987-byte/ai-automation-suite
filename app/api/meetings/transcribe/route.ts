@@ -5,7 +5,7 @@ import Anthropic from "@anthropic-ai/sdk";
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 export const maxDuration = 60; // reuniones más largas
 
-// Transcripción REAL (OpenAI Whisper) + análisis a brief de requisitos (Claude).
+// Transcripción REAL (Groq · Whisper large v3) + análisis a brief de requisitos (Claude).
 // Antes: el resumen era SIMULADO (Claude se lo inventaba del título). Ahora escucha el audio de verdad.
 export async function POST(req: NextRequest) {
   try {
@@ -13,20 +13,20 @@ export async function POST(req: NextRequest) {
     const audio = formData.get("audio") as File;
     const title = (formData.get("title") as string) || "Reunión";
     if (!audio) return NextResponse.json({ error: "No se recibió audio" }, { status: 400 });
-    if (!process.env.OPENAI_API_KEY)
-      return NextResponse.json({ error: "Falta OPENAI_API_KEY. Configúrala en Vercel para activar la transcripción real." }, { status: 501 });
+    if (!process.env.GROQ_API_KEY)
+      return NextResponse.json({ error: "Falta GROQ_API_KEY. Configúrala en Vercel para activar la transcripción real." }, { status: 501 });
     if (audio.size > 25 * 1024 * 1024)
       return NextResponse.json({ error: "El audio supera 25 MB (límite de Whisper). Graba reuniones más cortas o divídelas." }, { status: 413 });
 
-    // 1) TRANSCRIPCIÓN REAL con OpenAI Whisper
+    // 1) TRANSCRIPCIÓN REAL con Groq (Whisper large v3, endpoint compatible OpenAI)
     const wForm = new FormData();
     wForm.append("file", audio, audio.name || "meeting.webm");
-    wForm.append("model", "whisper-1");
+    wForm.append("model", "whisper-large-v3");
     wForm.append("language", "es");
     wForm.append("response_format", "text");
-    const wRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    const wRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+      headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
       body: wForm,
     });
     if (!wRes.ok) {
